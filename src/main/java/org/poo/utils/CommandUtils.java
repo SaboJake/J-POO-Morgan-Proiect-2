@@ -1,0 +1,104 @@
+package org.poo.utils;
+
+import org.poo.actors.Account;
+import org.poo.actors.Card;
+import org.poo.actors.User;
+import org.poo.banking.CurrencyPair;
+import org.poo.banking.ExchangeRate;
+import org.poo.exceptions.*;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+public final class CommandUtils {
+    private CommandUtils() {
+        throw new IllegalAccessError("Utility class");
+    }
+
+    /**
+     * Handle exception logic for a user and an account
+     * Checks if they exist and if the account is owned by the user
+     * @param email - user email
+     * @param iban - IBAN of account
+     */
+    public static void userAccountCheck(final String email, final String iban)
+            throws NoAccountException, NoUserException, AccountNotOwnedException {
+        User user = Maps.USER_MAP.get(email);
+        if (user == null) {
+            throw new NoUserException(email);
+        }
+        Account account = Maps.ACCOUNT_MAP.get(iban);
+        if (account == null) {
+            throw new NoAccountException(iban);
+        }
+        if (!user.getAccounts().contains(account)) {
+            throw new AccountNotOwnedException(iban + " " + email);
+        }
+    }
+
+    /**
+     * Handle exception logic for a user and a card
+     * Check if they exist and if the card is owned by the user
+     * @param email - user email
+     * @param cardNumber - card number
+     */
+    public static void userCardCheck(final String email, final String cardNumber)
+            throws NoUserException, NoCardException, CardNotOwnedException {
+        User user = Maps.USER_MAP.get(email);
+        if (user == null) {
+            throw new NoUserException(email);
+        }
+        Card card = Maps.CARD_MAP.get(cardNumber);
+        if (card == null) {
+            throw new NoCardException(cardNumber);
+        }
+        if (!Maps.USER_MAP.containsKey(cardNumber)) {
+            throw new CardNotOwnedException(cardNumber + " " + email);
+        }
+    }
+
+    /**
+     * Get converted amount form a currency to another
+     * @param amount - amount to be converted
+     * @param from - form currency
+     * @param to - to currency
+     * @return - converted amount
+     */
+    public static double getActualAmount(final double amount, final String from, final String to) {
+        if (!from.equals(to)) {
+            return amount * ExchangeRate.DIST.get(new CurrencyPair(from, to));
+        }
+        return amount;
+    }
+
+    /**
+     * Check if bank transfer is possible and if so return the amount
+     * @param from - IBAN or alias of account
+     * @param currency - currency needed for conversion
+     * @param amount - amount of funds needed to be deducted
+     */
+    public static double bankTransferCheck(final String from, final String currency,
+                                           final double amount)
+            throws NoAccountException, InsufficientFundsException {
+        Account fromAccount = Maps.ACCOUNT_MAP.get(from);
+        if (fromAccount == null) {
+            throw new NoAccountException(from);
+        }
+        double actualAmount = getActualAmount(amount, currency, fromAccount.getCurrency());
+        if (fromAccount.getBalance() < actualAmount) {
+            throw new InsufficientFundsException(from);
+        }
+        return actualAmount;
+    }
+
+    /**
+     * Rounding function
+     * @param value - value to be rounded
+     * @param places - number of decimal places
+     * @return - rounded value to decimal places
+     */
+    public static double round(final double value, final int places) {
+        return new BigDecimal(value)
+                .setScale(places, RoundingMode.HALF_UP).doubleValue();
+    }
+}

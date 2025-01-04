@@ -3,9 +3,14 @@ package org.poo.main;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.poo.banking.Bank;
 import org.poo.checker.Checker;
 import org.poo.checker.CheckerConstants;
 import org.poo.fileio.ObjectInput;
+import org.poo.utils.Utils;
+import org.poo.work.Cleanup;
+import org.poo.work.ExecuteCommands;
+import org.poo.work.Init;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +26,7 @@ import java.util.Objects;
  */
 public final class Main {
     /**
-     * for coding style
+     * for checkstyle
      */
     private Main() {
     }
@@ -73,25 +78,13 @@ public final class Main {
         ObjectInput inputData = objectMapper.readValue(file, ObjectInput.class);
 
         ArrayNode output = objectMapper.createArrayNode();
+        Utils.resetRandom();
+        Bank bank = new Bank();
 
-        /*
-         * TODO Implement your function here
-         *
-         * How to add output to the output array?
-         * There are multiple ways to do this, here is one example:
-         *
-         * ObjectMapper mapper = new ObjectMapper();
-         *
-         * ObjectNode objectNode = mapper.createObjectNode();
-         * objectNode.put("field_name", "field_value");
-         *
-         * ArrayNode arrayNode = mapper.createArrayNode();
-         * arrayNode.add(objectNode);
-         *
-         * output.add(arrayNode);
-         * output.add(objectNode);
-         *
-         */
+        bank.setUsers(Init.initUsers(inputData));
+        Init.initExchange(inputData);
+        ExecuteCommands.execute(bank, inputData, output);
+        Cleanup.clean();
 
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
         objectWriter.writeValue(new File(filePath2), output);
@@ -104,9 +97,8 @@ public final class Main {
      * @return the extracted numbers
      */
     public static int fileConsumer(final File file) {
-        return Integer.parseInt(
-                file.getName()
-                        .replaceAll(CheckerConstants.DIGIT_REGEX, CheckerConstants.EMPTY_STR)
-        );
+        String fileName = file.getName()
+                .replaceAll(CheckerConstants.DIGIT_REGEX, CheckerConstants.EMPTY_STR);
+        return Integer.parseInt(fileName.substring(0, 2));
     }
 }

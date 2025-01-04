@@ -5,11 +5,14 @@
     <scanScope>JavaOnly</scanScope>
     <copyLibs>true</copyLibs>
     <option name="thirdPartyClasspath" />
-    <option name="activeLocationIds" />
+    <option name="activeLocationIds">
+      <option value="df916710-c18a-45e8-aba4-eaa89158c3bb" />
+    </option>
     <option name="locations">
       <list>
         <ConfigurationLocation id="bundled-sun-checks" type="BUNDLED" scope="All" description="Sun Checks">(bundled)</ConfigurationLocation>
         <ConfigurationLocation id="bundled-google-checks" type="BUNDLED" scope="All" description="Google Checks">(bundled)</ConfigurationLocation>
+        <ConfigurationLocation id="df916710-c18a-45e8-aba4-eaa89158c3bb" type="LOCAL_FILE" scope="All" description="check">$PROJECT_DIR$/src/main/resources/poo_checks.xml</ConfigurationLocation>
       </list>
     </option>
   </component>

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.actors.Account;
 import org.poo.actors.User;
+import org.poo.banking.ExchangeRate;
 import org.poo.exceptions.InsufficientFundsException;
 import org.poo.exceptions.NoAccountException;
 import org.poo.fileio.CommandInput;
@@ -51,6 +52,11 @@ public class SplitPayment extends BankCommand implements Command {
             User user = Maps.USER_MAP.get(accounts.get(i));
             user.getTransactions().add(tr);
             account.getTransactions().add(tr);
+            // update service plan
+            double ronAmount = ExchangeRate.getRONRate(currency, amounts.get(i));
+            if (ronAmount >= 500) {
+                user.updateProgress();
+            }
         }
     }
 }

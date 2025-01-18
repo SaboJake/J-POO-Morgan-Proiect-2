@@ -2,6 +2,7 @@ package org.poo.utils;
 
 import org.poo.actors.Account;
 import org.poo.actors.Card;
+import org.poo.actors.ServicePlan;
 import org.poo.actors.User;
 import org.poo.banking.CurrencyPair;
 import org.poo.banking.ExchangeRate;
@@ -85,10 +86,13 @@ public final class CommandUtils {
             throw new NoAccountException(from);
         }
         double actualAmount = getActualAmount(amount, currency, fromAccount.getCurrency());
-        if (fromAccount.getBalance() < actualAmount) {
+        User user = Maps.USER_MAP.get(from);
+        double commission = getCommission(actualAmount, user.getServicePlan(),
+                fromAccount.getCurrency());
+        if (fromAccount.getBalance() < actualAmount + commission) {
             throw new InsufficientFundsException(from);
         }
-        return actualAmount;
+        return actualAmount + commission;
     }
 
     /**
@@ -100,5 +104,23 @@ public final class CommandUtils {
     public static double round(final double value, final int places) {
         return new BigDecimal(value)
                 .setScale(places, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    /**
+     * Get the commission for a transaction
+     * @param amount - amount of transaction
+     * @param servicePlan - service plan of user
+     * @param currency - currency of transaction
+     * @return - commission amount
+     */
+    public static double getCommission(final double amount, final ServicePlan servicePlan,
+                                       final String currency) {
+        if (servicePlan == ServicePlan.STANDARD) {
+            return amount * 0.002;
+        }
+        if (servicePlan == ServicePlan.SILVER && ExchangeRate.getRONRate(currency, amount) > 500) {
+            return amount * 0.001;
+        }
+        return 0.0;
     }
 }

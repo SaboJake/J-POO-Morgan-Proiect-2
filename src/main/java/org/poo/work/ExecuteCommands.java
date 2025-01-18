@@ -45,8 +45,13 @@ public final class ExecuteCommands {
         ObjectMapper mapper = new ObjectMapper();
 
         for (CommandInput commandInput: in.getCommands()) {
-            BankCommand command = CommandFactory.createCommand(commandInput.getCommand(),
-                    commandInput);
+            BankCommand command;
+            try {
+                command = CommandFactory.createCommand(commandInput.getCommand(), commandInput);
+            } catch (UnknownCommandException e) {
+                System.out.println("Unknown command: " + e.getMessage());
+                continue;
+            }
             try {
                 if (commandInput.getCommand().equals("printUsers")) {
                     ((PrintUsers) command).setUsers(bank.getUsers());

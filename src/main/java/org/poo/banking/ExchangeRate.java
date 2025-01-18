@@ -52,4 +52,24 @@ public final class ExchangeRate {
             }
         }
     }
+
+    /**
+     * Get the exchange rate between a currency and RON
+     * @param currency - currency to convert
+     * @param amount - amount to convert
+     * @return - the amount in RON
+     */
+    public static double getRONRate(final String currency, final double amount) {
+        return amount * DIST.get(new CurrencyPair(currency, "RON"));
+    }
+
+    /**
+     * Get the exchange rate between RON and a currency
+     * @param currency - currency to convert
+     * @param amount - amount to convert
+     * @return - the amount in the currency
+     */
+    public static double getFromRonRate(final String currency, final double amount) {
+        return amount * DIST.get(new CurrencyPair("RON", currency));
+    }
 }

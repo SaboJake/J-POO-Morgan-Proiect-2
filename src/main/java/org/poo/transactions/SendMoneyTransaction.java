@@ -2,6 +2,8 @@ package org.poo.transactions;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.poo.actors.User;
+import org.poo.utils.Maps;
 
 @Setter @Getter
 public class SendMoneyTransaction extends Transaction {

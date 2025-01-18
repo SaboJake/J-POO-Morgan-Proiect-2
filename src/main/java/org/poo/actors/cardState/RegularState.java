@@ -4,12 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.poo.actors.Account;
 import org.poo.actors.Card;
+import org.poo.actors.Discount;
 import org.poo.actors.User;
 import org.poo.banking.CurrencyPair;
 import org.poo.banking.ExchangeRate;
 import org.poo.exceptions.InsufficientFundsException;
 import org.poo.transactions.CardTransaction;
 import org.poo.transactions.PayOnlineTransaction;
+import org.poo.utils.CommandUtils;
+import org.poo.utils.DiscountUtil;
 import org.poo.utils.Maps;
 import org.poo.utils.Utils;
 
@@ -35,23 +38,27 @@ public class RegularState implements CardState {
             double r = ExchangeRate.DIST.get(new CurrencyPair(currency, account.getCurrency()));
             actualAmount *= r;
         }
-        if (account.getBalance() < actualAmount) {
+        double commission = CommandUtils.getCommission(actualAmount,
+                user.getServicePlan(), account.getCurrency());
+        if (account.getBalance() < actualAmount + commission) {
             throw new InsufficientFundsException(account.getIban());
         }
 
         if (account.getMinBalance() > 0
-                && account.getBalance() - actualAmount
+                && account.getBalance() - actualAmount - commission
                 + WARING_THRESHOLD < account.getMinBalance()) {
             card.setState(new FrozenState(timestamp,
                     "You have reached the minimum amount of funds, the card will be frozen"));
             card.handle();
             return;
         }
-        account.setBalance(account.getBalance() - actualAmount);
+        account.setBalance(account.getBalance() - actualAmount - commission);
+        // Check for discounts (also upgrade service plan if needed)
+        DiscountUtil.discountLogic(account, actualAmount, commerciant);
 
         // Add transaction
         PayOnlineTransaction tr1 = new PayOnlineTransaction(timestamp, "Card payment",
-                actualAmount, commerciant);
+                actualAmount, commerciant, user);
         user.getTransactions().add(tr1);
         account.getTransactions().add(tr1);
 

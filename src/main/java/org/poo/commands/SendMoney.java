@@ -3,12 +3,16 @@ package org.poo.commands;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.actors.Account;
+import org.poo.actors.Commerciant;
 import org.poo.actors.User;
+import org.poo.banking.CurrencyPair;
+import org.poo.banking.ExchangeRate;
 import org.poo.exceptions.InsufficientFundsException;
 import org.poo.exceptions.NoAccountException;
 import org.poo.fileio.CommandInput;
 import org.poo.transactions.SendMoneyTransaction;
 import org.poo.utils.CommandUtils;
+import org.poo.utils.DiscountUtil;
 import org.poo.utils.Maps;
 
 @Setter @Getter
@@ -39,18 +43,37 @@ public class SendMoney extends BankCommand implements Command {
     public void execute() throws NoAccountException, InsufficientFundsException {
         Account fromAccount = Maps.ACCOUNT_MAP.get(fromIban);
         Account toAccount = Maps.ACCOUNT_MAP.get(toIban);
+        Commerciant comm = Maps.COMM_ACCOUNT_MAP.get(toIban);
         if (fromAccount == null) {
             throw new NoAccountException(fromIban);
         }
-        if (toAccount == null) {
+        if (toAccount == null && comm == null) {
             throw new NoAccountException(toIban);
         }
-        if (fromAccount.getBalance() < amount) {
-            System.out.println("Had: " + fromAccount.getBalance() + " Tried to send: " + amount);
+        User user = Maps.USER_MAP.get(fromIban);
+        double commission = CommandUtils
+                .getCommission(amount, user.getServicePlan(), fromAccount.getCurrency());
+        if (fromAccount.getBalance() < amount + commission) {
+            System.out.println("Had: " + fromAccount.getBalance() + " Tried to send: "
+                    + amount + " + " + commission);
             throw new InsufficientFundsException(fromIban);
         }
 
-        fromAccount.setBalance(fromAccount.getBalance() - amount);
+        fromAccount.setBalance(fromAccount.getBalance() - amount - commission);
+        // Check if transaction is being made to a commerciant
+        if (comm != null) {
+            // Add transaction based on commerciant
+            DiscountUtil.discountLogic(fromAccount, amount, comm.getCommerciant());
+            // Add transaction
+            amount = CommandUtils.round(amount, PLACES);
+            SendMoneyTransaction tr1 = new SendMoneyTransaction(timestamp, description,
+                    fromIban, toIban,
+                    amount + " " + fromAccount.getCurrency(), "sent");
+            User from = Maps.USER_MAP.get(fromIban);
+            from.getTransactions().add(tr1);
+            fromAccount.getTransactions().add(tr1);
+            return;
+        }
         double actualAmount = CommandUtils.getActualAmount(amount,
                 fromAccount.getCurrency(), toAccount.getCurrency());
         toAccount.setBalance(toAccount.getBalance() + actualAmount);

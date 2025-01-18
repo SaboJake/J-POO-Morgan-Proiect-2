@@ -82,6 +82,7 @@ public final class Main {
         Bank bank = new Bank();
 
         bank.setUsers(Init.initUsers(inputData));
+        bank.setCommerciants(Init.initCommerciants(inputData));
         Init.initExchange(inputData);
         ExecuteCommands.execute(bank, inputData, output);
         Cleanup.clean();

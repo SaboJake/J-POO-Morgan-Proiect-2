@@ -17,7 +17,6 @@ public class UnderageException extends NoOutputNecessaryException {
      */
     @Override
     public void handle(final BankCommand command) {
-        System.out.println("You are underage: " + getMessage());
         Transaction transaction = new Transaction(command.getTimestamp(),
                 "You don't have the minimum age required.");
         User user = Maps.USER_MAP.get(getMessage());

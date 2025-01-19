@@ -12,7 +12,5 @@ public class NoOutputNecessaryException extends RuntimeException {
    * @param command - the command
    */
   public void handle(final BankCommand command) {
-    System.out.println("Invalid: " + getMessage());
-    System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
   }
 }

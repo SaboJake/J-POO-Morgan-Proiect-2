@@ -24,7 +24,6 @@ public class RejectSplitPayment extends BankCommand implements Command {
      */
     @Override
     public void execute() {
-        System.out.println("Reject " + timestamp + " " + email);
         User user = Maps.USER_MAP.get(email);
         if (user == null || !email.contains("@")) {
             throw new NoUserException(email);

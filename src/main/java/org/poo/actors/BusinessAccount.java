@@ -8,7 +8,10 @@ import org.poo.banking.ExchangeRate;
 import org.poo.transactions.AddFundsTransaction;
 import org.poo.utils.Maps;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -168,10 +171,6 @@ public class BusinessAccount {
                     double deposited = depositMap.getOrDefault(entry.getKey(), 0.0);
                     return new AssociateSpending(name, spent, deposited);
                 })
-//                .sorted(Comparator.comparing(associate -> {
-//                    String[] names = associate.getUsername().split(" ");
-//                    return names.length > 1 ? names[1] : names[0];
-//                }))
                 .collect(Collectors.toList());
     }
 

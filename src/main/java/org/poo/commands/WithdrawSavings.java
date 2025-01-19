@@ -50,7 +50,6 @@ public class WithdrawSavings extends BankCommand implements Command {
         }
         // You don't have the minimum age required
         if (user.getAge() < minAge) {
-            System.out.println("You are underage: " + user.getAge());
             throw new UnderageException(savingsAccount);
         }
 

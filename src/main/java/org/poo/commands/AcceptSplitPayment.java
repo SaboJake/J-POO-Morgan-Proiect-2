@@ -28,8 +28,6 @@ public class AcceptSplitPayment extends BankCommand implements Command {
         if (user == null || !email.contains("@")) {
             throw new NoUserException(email);
         }
-        // System.out.println("User " + user.getEmail() + " accepted the split payment.");
-        // Accept next split payment that isn't already accepted
         NewSplitPayment splitPayment = null;
         for (int i = 0; i < user.getSplitPayments().size(); i++) {
             splitPayment = user.getSplitPayments().get(i);

@@ -67,7 +67,6 @@ public class User {
     public Transaction updateProgress(final Account account, final int timestamp) {
         final int transactionCountForUpgrade = 5;
         upgradeProgress++;
-        System.out.println("Upgrade progress for: " + email + " is: " + upgradeProgress);
         if (upgradeProgress >= transactionCountForUpgrade && servicePlan == ServicePlan.SILVER) {
             servicePlan = ServicePlan.GOLD;
             UpgradePlanTransaction transaction = new UpgradePlanTransaction(timestamp,

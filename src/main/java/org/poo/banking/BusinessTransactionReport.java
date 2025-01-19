@@ -76,12 +76,6 @@ public class BusinessTransactionReport extends AccountReport {
                 ));
         account.getBusinessAccount().updateMap(depositMap);
 
-        // Display elements from maps for debugging
-//        System.out.println("Spending map:");
-//        spendingMap.forEach((k, v) -> System.out.println(k + " " + v));
-//        System.out.println("Deposit map:");
-//        depositMap.forEach((k, v) -> System.out.println(k + " " + v));
-
         this.totalSpent = spendingMap.values().stream().mapToDouble(Double::doubleValue).sum();
         this.totalSpent -= spendingMap.getOrDefault(account.getBusinessAccount().getOwner(), 0.0);
         this.totalDeposited = depositMap.values().stream().mapToDouble(Double::doubleValue).sum();

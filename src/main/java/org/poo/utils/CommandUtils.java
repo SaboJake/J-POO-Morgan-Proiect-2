@@ -55,7 +55,6 @@ public final class CommandUtils {
         }
         Account account = Maps.ACCOUNT_MAP.get(cardNumber);
         if (!account.getType().equals("business") && !user.getAccounts().contains(account)) {
-            System.out.println("funny");
             throw new CardNotOwnedException(cardNumber + " " + email);
         }
         if (!Maps.USER_MAP.containsKey(cardNumber)) {

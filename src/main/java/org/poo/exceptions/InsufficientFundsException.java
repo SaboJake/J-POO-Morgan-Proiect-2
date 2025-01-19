@@ -20,7 +20,6 @@ public class InsufficientFundsException extends NoOutputNecessaryException {
      */
     @Override
     public void handle(final BankCommand command) {
-        System.out.println("Insufficient funds: " + getMessage());
         if (command.getCommand().equals("splitPayment")) {
             SplitPaymentTransaction tr = ((SplitPayment) command).getTr();
             String error = "Account " + getMessage()
@@ -40,6 +39,5 @@ public class InsufficientFundsException extends NoOutputNecessaryException {
             account.getTransactions().add(new Transaction(command.getTimestamp(),
                     "Insufficient funds"));
         }
-        System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
     }
 }

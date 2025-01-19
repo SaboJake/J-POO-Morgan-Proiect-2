@@ -68,7 +68,6 @@ public class NewSplitPayment extends BankCommand implements Command {
         for (String iban: ibans) {
             User user = Maps.USER_MAP.get(iban);
             user.getSplitPayments().addLast(this);
-            // System.out.println("User " + user.getEmail() + " received a split payment.");
         }
     }
 
@@ -88,11 +87,6 @@ public class NewSplitPayment extends BankCommand implements Command {
      * Initiate the payment when everyone accepts
      */
     public void initiate() {
-//        System.out.println("All users accepted the split payment: ");
-//        for (String iban: ibans) {
-//            System.out.print(Maps.USER_MAP.get(iban).getEmail() + " ");
-//        }
-//        System.out.println();
         List<Double> actualAmounts = new ArrayList<>();
         List<Double> commissions = new ArrayList<>();
         for (String iban: ibans) {
@@ -104,8 +98,6 @@ public class NewSplitPayment extends BankCommand implements Command {
             commission = 0;
             if (account.getBalance() < actualAmount + commission && error.equals("")) {
                 error = "Account " + iban + " has insufficient funds for a split payment.";
-                System.out.println(error);
-                System.out.println("c: splitPayment t: " + getTimestamp());
                 break;
             }
             actualAmounts.add(actualAmount);
@@ -151,12 +143,9 @@ public class NewSplitPayment extends BankCommand implements Command {
      * Remove the payment from the users
      */
     public void remove() {
-        // System.out.println("Split payment removed: ");
         for (String iban: ibans) {
             User user = Maps.USER_MAP.get(iban);
-            // System.out.print(user.getEmail() + " ");
             user.getSplitPayments().remove(this);
         }
-        // System.out.println();
     }
 }

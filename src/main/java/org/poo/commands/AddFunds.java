@@ -49,7 +49,6 @@ public class AddFunds extends BankCommand implements Command {
         if (!account.getBusinessAccount().canDeposit(email, amount)) {
             throw new NotAuthorizedException(email);
         }
-        // System.out.println(email + " added " + amount + " to " + iban);
         account.setBalance(account.getBalance() + amount);
         AddFundsTransaction tr = new AddFundsTransaction(timestamp, "Added funds", amount, email);
         account.getBusinessAccount().getAddFundsTransactions().add(tr);

@@ -17,8 +17,8 @@ import org.poo.transactions.Transaction;
 import org.poo.utils.CommandFactory;
 import org.poo.utils.Maps;
 
-public final class ExecuteCommands {
-    private ExecuteCommands() {
+public final class ExecuteCommandsDebug {
+    private ExecuteCommandsDebug() {
         throw new UnsupportedOperationException("This class cannot be instantiated.");
     }
 
@@ -49,6 +49,7 @@ public final class ExecuteCommands {
             try {
                 command = CommandFactory.createCommand(commandInput.getCommand(), commandInput);
             } catch (UnknownCommandException e) {
+                System.out.println("Unknown command: " + e.getMessage());
                 continue;
             }
             try {
@@ -60,12 +61,17 @@ public final class ExecuteCommands {
                     addCommand(command, command.getOutput(), out, mapper);
                 }
             } catch (NoCardException e) {
+                System.out.println("No such card: " + e.getMessage());
                 if (!command.getCommand().equals("deleteCard")) {
                     addDefaultOutput(command, "Card not found", out, mapper);
                 }
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (NotSavingsAccountException e) {
+                System.out.println("Not saving account: " + e.getMessage());
                 addDefaultOutput(command, "This is not a savings account", out, mapper);
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (InvalidAccountDelletionException e) {
+                System.out.println("Cannot delete account: " + e.getMessage());
                 String err = "Account couldn't be deleted - see org.poo.transactions for details";
                 addCommand(command, new ErrorOutput(err, command.getTimestamp()), out, mapper);
                 Transaction tr = new Transaction(command.getTimestamp(),
@@ -74,13 +80,17 @@ public final class ExecuteCommands {
                 Account account = Maps.ACCOUNT_MAP.get(e.getMessage());
                 user.getTransactions().add(tr);
                 account.getTransactions().add(tr);
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (NoAccountException e) {
+                System.out.println("No such account: " + e.getMessage());
                 if (command.getCommand().equals("upgradePlan")) {
                     addDefaultOutput(command, "Account not found", out, mapper);
                 } else {
                     addDefaultOutput(command, "User not found", out, mapper);
                 }
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (NoClassicAccountException e) {
+                System.out.println("No classic account for: " + e.getMessage());
                 Transaction tr = new Transaction(command.getTimestamp(),
                         "You do not have a classic account.");
                 Account account = Maps.ACCOUNT_MAP.get(e.getMessage());
@@ -94,16 +104,25 @@ public final class ExecuteCommands {
                 } else if (e.getMessage().equals("card not associated with user")) {
                     addDefaultOutput(command, "Card not found", out, mapper);
                 }
+                System.out.println("Not authorized: " + e.getMessage());
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (NoUserException e) {
+                System.out.println("No such user: " + e.getMessage());
                 addDefaultOutput(command, "User not found", out, mapper);
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (NotBusinessAccountException e) {
+                System.out.println("Not business account: " + e.getMessage());
                 addDefaultOutput(command, "This is not a business account", out, mapper);
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (CardNotOwnedException e) {
+                System.out.println("Card not owned: " + e.getMessage());
                 addDefaultOutput(command, "Card not found", out, mapper);
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (NoOutputNecessaryException e) {
                 e.handle(command);
             } catch (Exception e) {
-                // Handle unknown error
+                System.out.println("Unknown error: " + e.getMessage());
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             }
         }
     }

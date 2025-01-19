@@ -41,6 +41,10 @@ public class Account {
     @JsonIgnore
     private Map<String, TransactionInfo> transactionMap = new HashMap<>();
 
+    // Back reference to the business account
+    @JsonIgnore
+    private BusinessAccount businessAccount;
+
     public Account(final AccountBuilder builder) {
         this.iban = builder.getIban();
         this.balance = builder.getBalance();
@@ -89,6 +93,7 @@ public class Account {
         } else {
             // unknown strategy
         }
+        return -2;
     }
 
     private double getThresholdDiscount(final int threshold) {

@@ -29,9 +29,18 @@ public final class CommandFactory {
                     Map.entry("sendMoney", SendMoney::new),
                     Map.entry("setAlias", SetAlias::new),
                     Map.entry("setMinimumBalance", SetMinBalance::new),
-                    Map.entry("splitPayment", SplitPayment::new),
                     Map.entry("report", Report::new),
-                    Map.entry("spendingsReport", SpendingReport::new)
+                    Map.entry("spendingsReport", SpendingReport::new),
+                    Map.entry("withdrawSavings", WithdrawSavings::new),
+                    Map.entry("upgradePlan", UpgradePlan::new),
+                    Map.entry("cashWithdrawal", CashWithdrawal::new),
+                    Map.entry("splitPayment", NewSplitPayment::new),
+                    Map.entry("acceptSplitPayment", AcceptSplitPayment::new),
+                    Map.entry("rejectSplitPayment", RejectSplitPayment::new),
+                    Map.entry("addNewBusinessAssociate", AddNewBusinessAssociate::new),
+                    Map.entry("changeSpendingLimit", ChangeSpendingLimit::new),
+                    Map.entry("changeDepositLimit", ChangeDepositLimit::new),
+                    Map.entry("businessReport", BusinessReport::new)
             );
 
     /**

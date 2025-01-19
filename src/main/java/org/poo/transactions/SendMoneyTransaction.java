@@ -1,5 +1,6 @@
 package org.poo.transactions;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.actors.User;
@@ -11,6 +12,8 @@ public class SendMoneyTransaction extends Transaction {
     private String receiverIBAN;
     private String amount;
     private String transferType;
+    @JsonIgnore
+    private String email;
 
     public SendMoneyTransaction(final int timestamp, final String description,
                                 final String senderIBAN, final String receiverIBAN,
@@ -30,5 +33,6 @@ public class SendMoneyTransaction extends Transaction {
         this.amount = transaction.getAmount();
         this.transferType = transaction.getTransferType();
         this.type = transaction.getType();
+        this.email = transaction.getEmail();
     }
 }

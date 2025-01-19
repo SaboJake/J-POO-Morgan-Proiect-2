@@ -16,9 +16,10 @@ public final class CardStateFactory {
      */
     public static CardState createCardState(final String state, final int timestamp,
                                             final double amount,
-                                            final String currency, final String commerciant) {
+                                            final String currency, final String commerciant,
+                                            final String email) {
         return switch (state) {
-            case "active" -> new RegularState(timestamp, amount, currency, commerciant);
+            case "active" -> new RegularState(timestamp, amount, currency, commerciant, email);
             case "frozen" -> new FrozenState(timestamp, "The card is frozen");
             case "warning" -> new WarningState();
             default -> throw new IllegalArgumentException("Invalid card state");

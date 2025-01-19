@@ -1,5 +1,7 @@
 package org.poo.banking;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
@@ -19,6 +21,7 @@ public class AccountReport {
     @JsonSerialize(using = RoundingSerializer.class)
     private double balance;
     private String currency;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected List<Transaction> transactions;
 
     private static int findFirstIndex(final List<Transaction> transactions, final int target) {

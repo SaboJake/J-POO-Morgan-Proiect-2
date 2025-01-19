@@ -26,11 +26,8 @@ public final class Init {
     public static List<User> initUsers(final ObjectInput input) {
         List<User> users = new ArrayList<>();
         for (UserInput userInput: input.getUsers()) {
-            ServicePlan plan = userInput.getOccupation().equals("Student")
-                    ? ServicePlan.STUDENT : ServicePlan.STANDARD;
             users.add(new User(userInput.getFirstName(), userInput.getLastName(),
-                    userInput.getEmail(), userInput.getBirthDate(), userInput.getOccupation(),
-                    new ArrayList<>(), new ArrayList<>(), 0, plan));
+                    userInput.getEmail(), userInput.getBirthDate(), userInput.getOccupation()));
             Maps.USER_MAP.put(userInput.getEmail(), users.getLast());
         }
         return users;

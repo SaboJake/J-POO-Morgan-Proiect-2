@@ -32,7 +32,7 @@ public final class CommandUtils {
         if (account == null) {
             throw new NoAccountException(iban);
         }
-        if (!user.getAccounts().contains(account)) {
+        if (!account.getType().equals("business") && !user.getAccounts().contains(account)) {
             throw new AccountNotOwnedException(iban + " " + email);
         }
     }
@@ -122,5 +122,35 @@ public final class CommandUtils {
             return amount * 0.001;
         }
         return 0.0;
+    }
+
+    /**
+     * Get the cost of upgrading a service plan
+     * @param from - current service plan
+     * @param to - new service plan
+     * @param currency - currency of transaction
+     * @return - cost of upgrading
+     */
+    public static double getUpgradeCost(final ServicePlan from, final ServicePlan to,
+                                        final String currency) {
+        double amount =  Maps.UPGRADE_MATRIX[from.ordinal()][to.ordinal()];
+        return ExchangeRate.getFromRonRate(currency, amount);
+    }
+
+    /**
+     * Basic checks for a business account
+     * @param account - account to check
+     * @param email - email of the associated user
+     */
+    public static void businessCheck(final Account account, final String email) {
+        if (account == null) {
+            throw new NoAccountException(account.getIban());
+        }
+        if (!account.getType().equals("business")) {
+            throw new NotBusinessAccountException(account.getIban());
+        }
+        if (!Maps.USER_MAP.containsKey(email)) {
+            throw new NoUserException(email);
+        }
     }
 }

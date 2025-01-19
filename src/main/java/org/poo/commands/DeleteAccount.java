@@ -39,6 +39,20 @@ public class DeleteAccount extends BankCommand implements Command {
         if (account.getBalance() != 0) {
             throw new InvalidAccountDelletionException(iban);
         }
+        if (account.getType().equals("business") && !account.getBusinessAccount().getOwner().equals(email)) {
+            throw new NotAuthorizedException(email);
+        }
+        if (account.getType().equals("classic")
+                && user.getCurrencyAccountMap().get(account.getCurrency()) == account) {
+            user.getCurrencyAccountMap().remove(account.getCurrency());
+            for (Account account1: user.getAccounts()) {
+                if (account1 != account && account1.getType().equals("classic")
+                        && account1.getCurrency().equals(account.getCurrency())) {
+                    user.getCurrencyAccountMap().put(account.getCurrency(), account1);
+                    break;
+                }
+            }
+        }
         user.getAccounts().remove(account);
         for (Card card : account.getCards()) {
             Maps.CARD_MAP.remove(card.getCardNumber());

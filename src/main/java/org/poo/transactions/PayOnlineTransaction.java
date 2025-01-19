@@ -13,14 +13,15 @@ public class PayOnlineTransaction extends Transaction {
     private double amount;
     private String commerciant;
     @JsonIgnore
-    private User user;
+    private String email;
 
     public PayOnlineTransaction(final int timestamp, final String description,
                                 final double amount, final String commerciant,
-                                final User user) {
+                                final String email) {
         super(timestamp, description);
         this.amount = amount;
         this.commerciant = commerciant;
         this.type = "payOnline";
+        this.email = email;
     }
 }

@@ -81,6 +81,35 @@ public final class ExecuteCommands {
                 user.getTransactions().add(tr);
                 account.getTransactions().add(tr);
                 System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
+            } catch (NoAccountException e) {
+                System.out.println("No such account: " + e.getMessage());
+//                if (command.getCommand().equals("sendMoney")) {
+//                    addDefaultOutput(command, "User not found", out, mapper);
+//                }
+                if (command.getCommand().equals("upgradePlan")) {
+                    addDefaultOutput(command, "Account not found", out, mapper);
+                } else {
+                    addDefaultOutput(command, "User not found", out, mapper);
+                }
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
+            } catch (NoClassicAccountException e) {
+                System.out.println("No classic account for: " + e.getMessage());
+                Transaction tr = new Transaction(command.getTimestamp(),
+                        "You do not have a classic account.");
+                Account account = Maps.ACCOUNT_MAP.get(e.getMessage());
+                User user = Maps.USER_MAP.get(e.getMessage());
+                user.getTransactions().add(tr);
+                account.getTransactions().add(tr);
+            } catch (NotAuthorizedException e) {
+                if (e.getMessage().equals("You must be owner in order to change spending limit.")) {
+                    addDefaultOutput(command, e.getMessage(), out, mapper);
+                }
+                System.out.println("Not authorized: " + e.getMessage());
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
+            } catch (NoUserException e) {
+                System.out.println("No such user: " + e.getMessage());
+                addDefaultOutput(command, "User not found", out, mapper);
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (NoOutputNecessaryException e) {
                 e.handle(command);
             } catch (Exception e) {

@@ -9,6 +9,7 @@ import org.poo.actors.User;
 import org.poo.banking.CurrencyPair;
 import org.poo.banking.ExchangeRate;
 import org.poo.exceptions.InsufficientFundsException;
+import org.poo.exceptions.NotAuthorizedException;
 import org.poo.transactions.CardTransaction;
 import org.poo.transactions.PayOnlineTransaction;
 import org.poo.utils.CommandUtils;
@@ -22,6 +23,7 @@ public class RegularState implements CardState {
     private double amount;
     private String currency;
     private String commerciant;
+    private String email;
 
     private static final int WARING_THRESHOLD = 30;
     /**
@@ -30,7 +32,10 @@ public class RegularState implements CardState {
      */
     @Override
     public void handle(final Card card) {
-        User user = Maps.USER_MAP.get(card.getCardNumber());
+        if (amount <= 0) {
+            return;
+        }
+        User user = Maps.USER_MAP.get(email);
         Account account = Maps.ACCOUNT_MAP.get(card.getCardNumber());
 
         double actualAmount = amount;
@@ -40,6 +45,15 @@ public class RegularState implements CardState {
         }
         double commission = CommandUtils.getCommission(actualAmount,
                 user.getServicePlan(), account.getCurrency());
+
+        if (account.getType().equals("business")) {
+            // System.out.println(user.getEmail() + " spent " + actualAmount + " from " + account.getIban());
+            if (!account.getBusinessAccount().canSpend(user.getEmail(),
+                    actualAmount + commission)) {
+                throw new NotAuthorizedException(user.getEmail());
+            }
+        }
+
         if (account.getBalance() < actualAmount + commission) {
             throw new InsufficientFundsException(account.getIban());
         }
@@ -58,7 +72,7 @@ public class RegularState implements CardState {
 
         // Add transaction
         PayOnlineTransaction tr1 = new PayOnlineTransaction(timestamp, "Card payment",
-                actualAmount, commerciant, user);
+                actualAmount, commerciant, user.getEmail());
         user.getTransactions().add(tr1);
         account.getTransactions().add(tr1);
 

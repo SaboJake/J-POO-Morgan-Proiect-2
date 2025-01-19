@@ -40,10 +40,11 @@ public class PayOnline extends BankCommand implements Command {
     @Override
     public void execute() throws InsufficientFundsException,
             NoUserException, NoCardException, CardNotOwnedException {
+        // System.out.println(email + " pays " + amount + " to " + commerciant);
         CommandUtils.userCardCheck(email, cardNumber);
         Card card = Maps.CARD_MAP.get(cardNumber);
         card.setState(CardStateFactory.createCardState(card.getStatus(),
-                timestamp, amount, currency, commerciant));
+                timestamp, amount, currency, commerciant, email));
         card.handle();
     }
 }

@@ -54,5 +54,8 @@ public class CreateCard extends BankCommand implements Command {
                 card.getCardNumber(), email, iban);
         user.getTransactions().add(tr);
         account.getTransactions().add(tr);
+        if (account.getType().equals("business")) {
+            account.getBusinessAccount().addCard(email, card);
+        }
     }
 }

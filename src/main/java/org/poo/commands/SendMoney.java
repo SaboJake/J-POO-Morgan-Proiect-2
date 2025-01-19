@@ -9,6 +9,7 @@ import org.poo.banking.CurrencyPair;
 import org.poo.banking.ExchangeRate;
 import org.poo.exceptions.InsufficientFundsException;
 import org.poo.exceptions.NoAccountException;
+import org.poo.exceptions.NotAuthorizedException;
 import org.poo.fileio.CommandInput;
 import org.poo.transactions.SendMoneyTransaction;
 import org.poo.utils.CommandUtils;
@@ -21,6 +22,7 @@ public class SendMoney extends BankCommand implements Command {
     private String toIban;
     private double amount;
     private String description;
+    private String email;
 
     private static final int PLACES = 5;
 
@@ -34,6 +36,7 @@ public class SendMoney extends BankCommand implements Command {
         }
         this.amount = input.getAmount();
         this.description = input.getDescription();
+        this.email = input.getEmail();
     }
 
     /**
@@ -53,6 +56,13 @@ public class SendMoney extends BankCommand implements Command {
         User user = Maps.USER_MAP.get(fromIban);
         double commission = CommandUtils
                 .getCommission(amount, user.getServicePlan(), fromAccount.getCurrency());
+
+        if (fromAccount.getType().equals("business")) {
+            if (!fromAccount.getBusinessAccount().canSpend(email, amount + commission)) {
+                throw new NotAuthorizedException(email);
+            }
+        }
+
         if (fromAccount.getBalance() < amount + commission) {
             System.out.println("Had: " + fromAccount.getBalance() + " Tried to send: "
                     + amount + " + " + commission);
@@ -87,6 +97,9 @@ public class SendMoney extends BankCommand implements Command {
         SendMoneyTransaction tr1 = new SendMoneyTransaction(timestamp, description,
                 fromIban, toIban,
                 amount + " " + fromAccount.getCurrency(), "sent");
+        if (fromAccount.getType().equals("business")) {
+            tr1.setEmail(email);
+        }
         from.getTransactions().add(tr1);
         fromAccount.getTransactions().add(tr1);
 

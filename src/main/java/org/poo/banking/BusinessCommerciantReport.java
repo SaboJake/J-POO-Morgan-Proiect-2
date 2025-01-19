@@ -8,15 +8,14 @@ import org.poo.actors.Account;
 import org.poo.actors.User;
 import org.poo.transactions.PayOnlineTransaction;
 import org.poo.transactions.SendMoneyTransaction;
-import org.poo.transactions.Transaction;
 import org.poo.utils.Maps;
 import org.poo.utils.RoundingSerializer;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Setter @Getter
 public class BusinessCommerciantReport extends AccountReport {
@@ -35,62 +34,81 @@ public class BusinessCommerciantReport extends AccountReport {
         super(account, startTimestamp, endTimestamp);
         this.spendingLimit = account.getBusinessAccount().getSpendLimit();
         this.depositLimit = account.getBusinessAccount().getDepositLimit();
-        // Filter only sendMoney and payOnline transactions
+
         transactions.removeIf(tr -> !tr.getType().equals("sendMoney")
                 && !tr.getType().equals("payOnline"));
-        Map<String, CommerciantBusinessSpending> spendingMap = new HashMap<>();
-        for (Transaction tr: transactions) {
-            String email = "", commerciant = "";
-            double amount = -1;
-            // Getting the email, amount and commerciant
-            if (tr.getType().equals("payOnline")) {
-                email = ((PayOnlineTransaction) tr).getEmail();
-                amount = ((PayOnlineTransaction) tr).getAmount();
-                commerciant = ((PayOnlineTransaction) tr).getCommerciant();
-            } else {
-                if (Maps.COMM_MAP.containsKey(((SendMoneyTransaction) tr).getReceiverIBAN())) {
-                    email = ((SendMoneyTransaction) tr).getEmail();
-                    amount = Double.parseDouble(((SendMoneyTransaction) tr).getAmount());
-                    commerciant = Maps.COMM_MAP.get(((SendMoneyTransaction) tr).getReceiverIBAN())
-                            .getCommerciant();
-                }
-            }
-            if (email.isEmpty() || amount == -1 || commerciant.isEmpty()
-                    || !account.getBusinessAccount().isManager(email)
-                    && !account.getBusinessAccount().isEmployee(email)) {
-                continue;
-            }
-            if (!spendingMap.containsKey(commerciant)) {
-                CommerciantBusinessSpending spending =
-                        new CommerciantBusinessSpending(commerciant, amount);
-                if (account.getBusinessAccount().isEmployee(email)) {
-                    spending.getEmployeeEmails().add(email);
-                } else if (account.getBusinessAccount().isManager(email)) {
-                    spending.getManagerEmails().add(email);
-                }
-                spendingMap.put(commerciant, spending);
-            } else {
-                CommerciantBusinessSpending spending = spendingMap.get(commerciant);
-                spending.setTotalReceived(spending.getTotalReceived() + amount);
-                if (account.getBusinessAccount().isEmployee(email)) {
-                    spending.getEmployeeEmails().add(email);
-                } else if (account.getBusinessAccount().isManager(email)) {
-                    spending.getManagerEmails().add(email);
-                }
-            }
-        }
-        // Go through the map
-        for (CommerciantBusinessSpending spending: spendingMap.values()) {
-            for (String email: spending.getManagerEmails()) {
-                User user = Maps.USER_MAP.get(email);
-                spending.getManagers().add(user.getLastName() + " " + user.getFirstName());
-            }
-            for (String email: spending.getEmployeeEmails()) {
-                User user = Maps.USER_MAP.get(email);
-                spending.getEmployees().add(user.getLastName() + " " + user.getFirstName());
-            }
-        }
-        this.commerciants = new ArrayList(List.copyOf(spendingMap.values()));
+
+        Map<String, CommerciantBusinessSpending> spendingMap = transactions.stream()
+                .filter(tr -> {
+                    String email = "";
+                    if (tr.getType().equals("payOnline")) {
+                        email = ((PayOnlineTransaction) tr).getEmail();
+                    } else if (Maps.COMM_MAP.containsKey(((SendMoneyTransaction) tr)
+                            .getReceiverIBAN())) {
+                        email = ((SendMoneyTransaction) tr).getEmail();
+                    }
+                    return !email.isEmpty() && (account.getBusinessAccount().isManager(email)
+                            || account.getBusinessAccount().isEmployee(email));
+                })
+                .collect(Collectors.toMap(
+                        tr -> {
+                            if (tr.getType().equals("payOnline")) {
+                                return ((PayOnlineTransaction) tr).getCommerciant();
+                            } else {
+                                return Maps.COMM_MAP.get(((SendMoneyTransaction) tr)
+                                        .getReceiverIBAN()).getCommerciant();
+                            }
+                        },
+                        tr -> {
+                            String email = "";
+                            double amount = -1;
+                            if (tr.getType().equals("payOnline")) {
+                                email = ((PayOnlineTransaction) tr).getEmail();
+                                amount = ((PayOnlineTransaction) tr).getAmount();
+                            } else {
+                                email = ((SendMoneyTransaction) tr).getEmail();
+                                amount = Double.parseDouble(((SendMoneyTransaction) tr)
+                                        .getAmount());
+                            }
+                            CommerciantBusinessSpending spending = new CommerciantBusinessSpending(
+                                    tr.getType().equals("payOnline")
+                                            ? ((PayOnlineTransaction) tr).getCommerciant()
+                                            : Maps.COMM_MAP.get(((SendMoneyTransaction) tr)
+                                            .getReceiverIBAN()).getCommerciant(),
+                                    amount
+                            );
+                            if (account.getBusinessAccount().isEmployee(email)) {
+                                spending.getEmployeeEmails().add(email);
+                            } else if (account.getBusinessAccount().isManager(email)) {
+                                spending.getManagerEmails().add(email);
+                            }
+                            return spending;
+                        },
+                        (existing, replacement) -> {
+                            existing.setTotalReceived(existing.getTotalReceived()
+                                    + replacement.getTotalReceived());
+                            existing.getEmployeeEmails().addAll(replacement.getEmployeeEmails());
+                            existing.getManagerEmails().addAll(replacement.getManagerEmails());
+                            return existing;
+                        }
+                ));
+
+        spendingMap.values().forEach(spending -> {
+            spending.setManagers(spending.getManagerEmails().stream()
+                    .map(email -> {
+                        User user = Maps.USER_MAP.get(email);
+                        return user.getLastName() + " " + user.getFirstName();
+                    })
+                    .collect(Collectors.toList()));
+            spending.setEmployees(spending.getEmployeeEmails().stream()
+                    .map(email -> {
+                        User user = Maps.USER_MAP.get(email);
+                        return user.getLastName() + " " + user.getFirstName();
+                    })
+                    .collect(Collectors.toList()));
+        });
+
+        this.commerciants = new ArrayList<>(spendingMap.values());
         this.commerciants.sort(Comparator.comparing(CommerciantBusinessSpending::getCommerciant));
         transactions = null;
     }

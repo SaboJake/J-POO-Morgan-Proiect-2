@@ -33,6 +33,9 @@ public class SendMoney extends BankCommand implements Command {
         if (Maps.ALIAS_MAP.containsKey(toIban)) {
             this.toIban = Maps.ALIAS_MAP.get(toIban);
         }
+        if (Maps.ALIAS_MAP.containsKey(fromIban)) {
+            this.fromIban = Maps.ALIAS_MAP.get(fromIban);
+        }
         this.amount = input.getAmount();
         this.description = input.getDescription();
         this.email = input.getEmail();

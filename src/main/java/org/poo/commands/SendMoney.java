@@ -5,13 +5,12 @@ import lombok.Setter;
 import org.poo.actors.Account;
 import org.poo.actors.Commerciant;
 import org.poo.actors.User;
-import org.poo.banking.CurrencyPair;
-import org.poo.banking.ExchangeRate;
 import org.poo.exceptions.InsufficientFundsException;
 import org.poo.exceptions.NoAccountException;
 import org.poo.exceptions.NotAuthorizedException;
 import org.poo.fileio.CommandInput;
 import org.poo.transactions.SendMoneyTransaction;
+import org.poo.transactions.Transaction;
 import org.poo.utils.CommandUtils;
 import org.poo.utils.DiscountUtil;
 import org.poo.utils.Maps;
@@ -70,10 +69,12 @@ public class SendMoney extends BankCommand implements Command {
         }
 
         fromAccount.setBalance(fromAccount.getBalance() - amount - commission);
+        Transaction updatePlan;
         // Check if transaction is being made to a commerciant
         if (comm != null) {
             // Add transaction based on commerciant
-            DiscountUtil.discountLogic(fromAccount, amount, comm.getCommerciant());
+            updatePlan = DiscountUtil
+                    .discountLogic(fromAccount, amount, comm.getCommerciant(), timestamp);
             // Add transaction
             amount = CommandUtils.round(amount, PLACES);
             SendMoneyTransaction tr1 = new SendMoneyTransaction(timestamp, description,
@@ -108,5 +109,6 @@ public class SendMoney extends BankCommand implements Command {
                 actualAmount + " " + toAccount.getCurrency(), "received");
         to.getTransactions().add(tr2);
         toAccount.getTransactions().add(tr2);
+        // maybe add updatePlan???
     }
 }

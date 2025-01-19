@@ -9,18 +9,21 @@ import org.poo.actors.User;
 import org.poo.transactions.AddFundsTransaction;
 import org.poo.transactions.PayOnlineTransaction;
 import org.poo.transactions.SendMoneyTransaction;
-import org.poo.transactions.Transaction;
 import org.poo.utils.Maps;
 import org.poo.utils.RoundingSerializer;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Setter @Getter
 public class BusinessTransactionReport extends AccountReport {
+    @JsonSerialize(using = RoundingSerializer.class)
     @JsonProperty("spending limit")
     private double spendingLimit;
+    @JsonSerialize(using = RoundingSerializer.class)
     @JsonProperty("deposit limit")
     private double depositLimit;
     private List<AssociateSpending> managers;
@@ -74,19 +77,32 @@ public class BusinessTransactionReport extends AccountReport {
         account.getBusinessAccount().updateMap(depositMap);
 
         // Display elements from maps for debugging
-        System.out.println("Spending map:");
-        spendingMap.forEach((k, v) -> System.out.println(k + " " + v));
-        System.out.println("Deposit map:");
-        depositMap.forEach((k, v) -> System.out.println(k + " " + v));
+//        System.out.println("Spending map:");
+//        spendingMap.forEach((k, v) -> System.out.println(k + " " + v));
+//        System.out.println("Deposit map:");
+//        depositMap.forEach((k, v) -> System.out.println(k + " " + v));
 
         this.totalSpent = spendingMap.values().stream().mapToDouble(Double::doubleValue).sum();
         this.totalSpent -= spendingMap.getOrDefault(account.getBusinessAccount().getOwner(), 0.0);
         this.totalDeposited = depositMap.values().stream().mapToDouble(Double::doubleValue).sum();
-        this.totalDeposited -= depositMap.getOrDefault(account.getBusinessAccount().getOwner(), 0.0);
+        this.totalDeposited -= depositMap
+                .getOrDefault(account.getBusinessAccount().getOwner(), 0.0);
 
         this.managers = account.getBusinessAccount().getManagersSpending(spendingMap, depositMap);
         this.employees = account.getBusinessAccount().getEmployeesSpending(spendingMap, depositMap);
+        // Construct username list used for sorting
+        List<String> usernames = new ArrayList<>();
+        for (String email: account.getBusinessAccount().getAssociates()) {
+            User user = Maps.USER_MAP.get(email);
+            usernames.add(user.getLastName() + " " + user.getFirstName());
+        }
 
+        Comparator<AssociateSpending> comparator = Comparator.comparingInt(
+                associate -> usernames.indexOf(associate.getUsername())
+        );
+
+        this.managers.sort(comparator);
+        this.employees.sort(comparator);
         transactions = null;
     }
 }

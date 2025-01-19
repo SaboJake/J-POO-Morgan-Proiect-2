@@ -36,10 +36,12 @@ public class DeleteAccount extends BankCommand implements Command {
         CommandUtils.userAccountCheck(email, iban);
         User user = Maps.USER_MAP.get(email);
         Account account = Maps.ACCOUNT_MAP.get(iban);
-        if (account.getBalance() != 0) {
+        final double threshold = 1e-10;
+        if (account.getBalance() > threshold) {
             throw new InvalidAccountDelletionException(iban);
         }
-        if (account.getType().equals("business") && !account.getBusinessAccount().getOwner().equals(email)) {
+        if (account.getType().equals("business")
+                && !account.getBusinessAccount().getOwner().equals(email)) {
             throw new NotAuthorizedException(email);
         }
         if (account.getType().equals("classic")

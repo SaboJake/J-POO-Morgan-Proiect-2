@@ -32,6 +32,7 @@ public class WithdrawSavings extends BankCommand implements Command {
      */
     @Override
     public void execute() {
+        final int minAge = 21;
         Account fromAccount = Maps.ACCOUNT_MAP.get(savingsAccount);
         // Account not found
         if (fromAccount == null) {
@@ -48,7 +49,7 @@ public class WithdrawSavings extends BankCommand implements Command {
             throw new NotSavingsAccountException(savingsAccount);
         }
         // You don't have the minimum age required
-        if (user.getAge() < 21) {
+        if (user.getAge() < minAge) {
             System.out.println("You are underage: " + user.getAge());
             throw new UnderageException(savingsAccount);
         }

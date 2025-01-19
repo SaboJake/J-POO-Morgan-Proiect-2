@@ -30,7 +30,8 @@ public class ChangeDepositLimit extends BankCommand implements Command {
         Account account = Maps.ACCOUNT_MAP.get(iban);
         CommandUtils.businessCheck(account, email);
         if (!account.getBusinessAccount().getOwner().equals(email)) {
-            throw new NotAuthorizedException(email);
+            String err = "You must be owner in order to change deposit limit.";
+            throw new NotAuthorizedException(err);
         }
         account.getBusinessAccount().setDepositLimit(amount);
     }

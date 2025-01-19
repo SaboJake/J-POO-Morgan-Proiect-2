@@ -6,8 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.commands.NewSplitPayment;
 import org.poo.transactions.Transaction;
+import org.poo.transactions.UpgradePlanTransaction;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Setter @Getter @AllArgsConstructor
 public class User {
@@ -30,6 +34,11 @@ public class User {
     private Map<String, Account> currencyAccountMap;
     @JsonIgnore
     private List<NewSplitPayment> splitPayments;
+    @JsonIgnore
+    private List<NewSplitPayment> customSplitPayments;
+    @JsonIgnore
+    private List<NewSplitPayment> equalSplitPayments;
+
 
     public User(final String firstName, final String lastName, final String email,
                 final String birthDate, final String occupation) {
@@ -48,16 +57,24 @@ public class User {
         }
         this.currencyAccountMap = new HashMap<>();
         this.splitPayments = new ArrayList<>();
+        this.customSplitPayments = new ArrayList<>();
+        this.equalSplitPayments = new ArrayList<>();
     }
 
     /**
      * Update the user's service plan based on the number of transactions made
      */
-    public void updateProgress() {
+    public Transaction updateProgress(final Account account, final int timestamp) {
+        final int transactionCountForUpgrade = 5;
         upgradeProgress++;
-        if (upgradeProgress >= 5 && servicePlan == ServicePlan.SILVER) {
+        System.out.println("Upgrade progress for: " + email + " is: " + upgradeProgress);
+        if (upgradeProgress >= transactionCountForUpgrade && servicePlan == ServicePlan.SILVER) {
             servicePlan = ServicePlan.GOLD;
+            UpgradePlanTransaction transaction = new UpgradePlanTransaction(timestamp,
+                    "Upgrade plan", account.getIban(), "gold");
+            return transaction;
         }
+        return null;
     }
 
     /**
@@ -66,7 +83,8 @@ public class User {
      */
     @JsonIgnore
     public int getAge() {
+        final int currentYear = 2024;
         String date = birthDate.split("-")[0];
-        return 2024 - Integer.parseInt(date);
+        return currentYear - Integer.parseInt(date);
     }
 }

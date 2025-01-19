@@ -10,7 +10,8 @@ public class WithdrawSavingsTransaction extends Transaction {
     private double amount;
 
     public WithdrawSavingsTransaction(final int timestamp, final String description,
-                                      final String classicAccountIBAN, final String savingsAccountIBAN,
+                                      final String classicAccountIBAN,
+                                      final String savingsAccountIBAN,
                                       final double amount) {
         super(timestamp, description);
         this.classicAccountIBAN = classicAccountIBAN;

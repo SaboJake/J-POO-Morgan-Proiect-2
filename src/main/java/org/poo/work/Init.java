@@ -1,7 +1,6 @@
 package org.poo.work;
 
 import org.poo.actors.Commerciant;
-import org.poo.actors.ServicePlan;
 import org.poo.actors.User;
 import org.poo.banking.ExchangeRate;
 import org.poo.fileio.CommerciantInput;

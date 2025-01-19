@@ -33,14 +33,17 @@ public class BusinessAccount {
     }
 
     private Map<String, Assosciate> assosciateMap;
+    private List<String> associates;
 
     public BusinessAccount(final String owner, final Account account) {
+        final int initialLimit = 500;
         this.owner = owner;
         this.account = account;
         this.assosciateMap = new HashMap<>();
-        this.spendLimit = ExchangeRate.getFromRonRate(account.getCurrency(), 500);
+        this.spendLimit = ExchangeRate.getFromRonRate(account.getCurrency(), initialLimit);
         this.depositLimit = spendLimit;
         this.addFundsTransactions = new ArrayList<>();
+        this.associates = new ArrayList<>();
     }
 
     /**
@@ -69,6 +72,7 @@ public class BusinessAccount {
      */
     public void addAssociate(final String email, final String type) {
         assosciateMap.put(email, new Assosciate(type));
+        associates.add(email);
     }
 
     /**
@@ -133,12 +137,10 @@ public class BusinessAccount {
 
     /**
      * Remove the given card from the given email
-     * @param email - the email to remove the card
      * @param card - the card to remove
      */
-    public void removeCard(final String email, final Card card) {
-        Assosciate assosciate = assosciateMap.get(email);
-        if (assosciate != null) {
+    public void removeCard(final Card card) {
+        for (Assosciate assosciate: assosciateMap.values()) {
             assosciate.cards.remove(card.getCardNumber());
         }
     }
@@ -166,10 +168,10 @@ public class BusinessAccount {
                     double deposited = depositMap.getOrDefault(entry.getKey(), 0.0);
                     return new AssociateSpending(name, spent, deposited);
                 })
-                .sorted(Comparator.comparing(associate -> {
-                    String[] names = associate.getUsername().split(" ");
-                    return names.length > 1 ? names[1] : names[0];
-                }))
+//                .sorted(Comparator.comparing(associate -> {
+//                    String[] names = associate.getUsername().split(" ");
+//                    return names.length > 1 ? names[1] : names[0];
+//                }))
                 .collect(Collectors.toList());
     }
 

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.poo.actors.Account;
 import org.poo.actors.Card;
-import org.poo.actors.Discount;
 import org.poo.actors.User;
 import org.poo.banking.CurrencyPair;
 import org.poo.banking.ExchangeRate;
@@ -12,6 +11,7 @@ import org.poo.exceptions.InsufficientFundsException;
 import org.poo.exceptions.NotAuthorizedException;
 import org.poo.transactions.CardTransaction;
 import org.poo.transactions.PayOnlineTransaction;
+import org.poo.transactions.Transaction;
 import org.poo.utils.CommandUtils;
 import org.poo.utils.DiscountUtil;
 import org.poo.utils.Maps;
@@ -47,7 +47,12 @@ public class RegularState implements CardState {
                 user.getServicePlan(), account.getCurrency());
 
         if (account.getType().equals("business")) {
-            // System.out.println(user.getEmail() + " spent " + actualAmount + " from " + account.getIban());
+            commission = CommandUtils.getCommission(actualAmount,
+                    Maps.USER_MAP.get(account.getIban()).getServicePlan(), account.getCurrency());
+            if (!account.getBusinessAccount().getAssosciateMap().containsKey(user.getEmail())
+                    && !account.getBusinessAccount().getOwner().equals(user.getEmail())) {
+                throw new NotAuthorizedException("card not associated with user");
+            }
             if (!account.getBusinessAccount().canSpend(user.getEmail(),
                     actualAmount + commission)) {
                 throw new NotAuthorizedException(user.getEmail());
@@ -68,7 +73,8 @@ public class RegularState implements CardState {
         }
         account.setBalance(account.getBalance() - actualAmount - commission);
         // Check for discounts (also upgrade service plan if needed)
-        DiscountUtil.discountLogic(account, actualAmount, commerciant);
+        Transaction updatePlan = DiscountUtil
+                .discountLogic(account, actualAmount, commerciant, timestamp);
 
         // Add transaction
         PayOnlineTransaction tr1 = new PayOnlineTransaction(timestamp, "Card payment",
@@ -99,6 +105,10 @@ public class RegularState implements CardState {
                     newCard.getCardNumber(), user.getEmail(), account.getIban());
             user.getTransactions().add(tr3);
             account.getTransactions().add(tr3);
+        }
+        if (updatePlan != null) {
+            user.getTransactions().add(updatePlan);
+            account.getTransactions().add(updatePlan);
         }
     }
 }

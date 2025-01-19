@@ -36,6 +36,7 @@ public class SplitPayment extends BankCommand implements Command {
      */
     @Override
     public void execute() throws NoAccountException, InsufficientFundsException {
+        final int upgradeThreshold = 300;
         // Preemptively set transaction
         String description = "Split payment of " + String.format("%.2f", amount) + " " + currency;
         amount /= accounts.size();
@@ -54,8 +55,8 @@ public class SplitPayment extends BankCommand implements Command {
             account.getTransactions().add(tr);
             // update service plan
             double ronAmount = ExchangeRate.getRONRate(currency, amounts.get(i));
-            if (ronAmount >= 500) {
-                user.updateProgress();
+            if (ronAmount >= upgradeThreshold) {
+                user.updateProgress(account, timestamp);
             }
         }
     }

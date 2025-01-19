@@ -5,7 +5,6 @@ import org.poo.actors.User;
 import org.poo.exceptions.NoAccountException;
 import org.poo.exceptions.NotSavingsAccountException;
 import org.poo.fileio.CommandInput;
-import org.poo.outputs.DefaultOutput;
 import org.poo.transactions.Transaction;
 import org.poo.utils.Maps;
 

@@ -53,6 +53,11 @@ public final class CommandUtils {
         if (card == null) {
             throw new NoCardException(cardNumber);
         }
+        Account account = Maps.ACCOUNT_MAP.get(cardNumber);
+        if (!account.getType().equals("business") && !user.getAccounts().contains(account)) {
+            System.out.println("funny");
+            throw new CardNotOwnedException(cardNumber + " " + email);
+        }
         if (!Maps.USER_MAP.containsKey(cardNumber)) {
             throw new CardNotOwnedException(cardNumber + " " + email);
         }
@@ -115,11 +120,14 @@ public final class CommandUtils {
      */
     public static double getCommission(final double amount, final ServicePlan servicePlan,
                                        final String currency) {
+        final double smallCommission = 0.001, bigCommission = 0.002;
+        final int commissionThreshold = 500;
         if (servicePlan == ServicePlan.STANDARD) {
-            return amount * 0.002;
+            return amount * bigCommission;
         }
-        if (servicePlan == ServicePlan.SILVER && ExchangeRate.getRONRate(currency, amount) > 500) {
-            return amount * 0.001;
+        if (servicePlan == ServicePlan.SILVER
+                && ExchangeRate.getRONRate(currency, amount) > commissionThreshold) {
+            return amount * smallCommission;
         }
         return 0.0;
     }

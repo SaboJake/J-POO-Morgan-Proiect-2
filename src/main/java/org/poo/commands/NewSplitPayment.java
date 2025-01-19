@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.actors.Account;
 import org.poo.actors.User;
-import org.poo.exceptions.InsufficientFundsException;
 import org.poo.exceptions.NoAccountException;
 import org.poo.fileio.CommandInput;
 import org.poo.transactions.NewSplitPaymentTransaction;
@@ -12,7 +11,11 @@ import org.poo.transactions.Transaction;
 import org.poo.utils.CommandUtils;
 import org.poo.utils.Maps;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -128,7 +131,7 @@ public class NewSplitPayment extends BankCommand implements Command {
         }
     }
 
-    private NewSplitPaymentTransaction getNewSplitPaymentTransaction(final String error) {
+    private NewSplitPaymentTransaction getNewSplitPaymentTransaction(final String err) {
         String description = "Split payment of "
                 + String.format("%.2f", totalAmount) + " " + currency;
         NewSplitPaymentTransaction tr = new NewSplitPaymentTransaction(timestamp,
@@ -138,8 +141,8 @@ public class NewSplitPayment extends BankCommand implements Command {
         } else if (type.equals("equal")) {
             tr.setAmount(totalAmount / ibans.size());
         }
-        if (!error.isEmpty()) {
-            tr.setError(error);
+        if (!err.isEmpty()) {
+            tr.setError(err);
         }
         return tr;
     }

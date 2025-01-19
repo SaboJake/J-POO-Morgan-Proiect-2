@@ -37,18 +37,21 @@ public class CashWithdrawal extends BankCommand implements Command {
     public void execute() {
         Card card = Maps.CARD_MAP.get(cardNumber);
         if (card == null) {
+            System.out.println(timestamp);
             throw new NoCardException(cardNumber);
         }
         User user = Maps.USER_MAP.get(email);
         if (user == null) {
+            System.out.println("No user with email " + email);
             throw new NoUserException(email);
-        }
-        if (!Maps.USER_MAP.get(cardNumber).getEmail().equals(email)) {
-            throw new CardNotOwnedException(cardNumber + " " + email);
         }
         Account account = Maps.ACCOUNT_MAP.get(cardNumber);
         if (account.getType().equals("business")) {
             System.out.println("Business accounts cash withdrawal");
+        }
+        if (!Maps.USER_MAP.get(cardNumber).getEmail().equals(email)) {
+            System.out.println("Card not owned by user");
+            throw new CardNotOwnedException(cardNumber + " " + email);
         }
         double actualAmount = ExchangeRate.getFromRonRate(account.getCurrency(), amount);
         double commission = CommandUtils.getCommission(actualAmount,

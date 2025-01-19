@@ -101,14 +101,25 @@ public final class ExecuteCommands {
                 user.getTransactions().add(tr);
                 account.getTransactions().add(tr);
             } catch (NotAuthorizedException e) {
-                if (e.getMessage().equals("You must be owner in order to change spending limit.")) {
+                if (e.getMessage().equals("You must be owner in order to change spending limit.")
+                || e.getMessage().equals("You must be owner in order to change deposit limit.")) {
                     addDefaultOutput(command, e.getMessage(), out, mapper);
+                } else if (e.getMessage().equals("card not associated with user")) {
+                    addDefaultOutput(command, "Card not found", out, mapper);
                 }
                 System.out.println("Not authorized: " + e.getMessage());
                 System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (NoUserException e) {
                 System.out.println("No such user: " + e.getMessage());
                 addDefaultOutput(command, "User not found", out, mapper);
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
+            } catch (NotBusinessAccountException e) {
+                System.out.println("Not business account: " + e.getMessage());
+                addDefaultOutput(command, "This is not a business account", out, mapper);
+                System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
+            } catch (CardNotOwnedException e) {
+                System.out.println("Card not owned: " + e.getMessage());
+                addDefaultOutput(command, "Card not found", out, mapper);
                 System.out.println("c: " + command.getCommand() + " t: " + command.getTimestamp());
             } catch (NoOutputNecessaryException e) {
                 e.handle(command);

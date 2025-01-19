@@ -3,6 +3,7 @@ package org.poo.commands;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.actors.Account;
+import org.poo.banking.BusinessCommerciantReport;
 import org.poo.banking.BusinessTransactionReport;
 import org.poo.fileio.CommandInput;
 import org.poo.outputs.DefaultOutput;
@@ -40,6 +41,8 @@ public class BusinessReport extends BankCommand implements Command {
         } else {
             if (type.equals("transaction")) {
                 output = new BusinessTransactionReport(account, startTimestamp, endTimestamp);
+            } else if (type.equals("commerciant")) {
+                output = new BusinessCommerciantReport(account, startTimestamp, endTimestamp);
             }
         }
     }

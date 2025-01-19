@@ -28,6 +28,9 @@ public class DeleteCard extends BankCommand implements Command {
      */
     @Override
     public void execute() throws NoCardException {
+        if (true) {
+            return;
+        }
         Card card = Maps.CARD_MAP.get(cardNumber);
         if (card == null) {
             throw new NoCardException(cardNumber);
@@ -38,7 +41,7 @@ public class DeleteCard extends BankCommand implements Command {
         if (account.getType().equals("business")) {
             if (account.getBusinessAccount().hasCard(email, card)
                 || !account.getBusinessAccount().isEmployee(email)) {
-                account.getBusinessAccount().removeCard(email, card);
+                account.getBusinessAccount().removeCard(card);
             } else {
                 throw new NotAuthorizedException(email);
             }

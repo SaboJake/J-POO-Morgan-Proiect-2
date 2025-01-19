@@ -12,7 +12,11 @@ import org.poo.utils.Maps;
 import org.poo.utils.RoundingSerializer;
 
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
 
 @Setter @Getter @AllArgsConstructor
 public class Account {
@@ -30,10 +34,12 @@ public class Account {
     @JsonIgnore
     private List<Transaction> transactions;
     @JsonIgnore
+    private static final List<Double> DISCOUNT_AMOUNTS = List.of(0.02, 0.05, 0.1);
+    @JsonIgnore
     private List<Discount> discounts = new ArrayList<>(List.of(
-            new Discount(0.02, "Food", false, false),
-            new Discount(0.05, "Clothes", false, false),
-            new Discount(0.1, "Tech", false, false)));
+            new Discount(DISCOUNT_AMOUNTS.get(0), "Food", false, false),
+            new Discount(DISCOUNT_AMOUNTS.get(1), "Clothes", false, false),
+            new Discount(DISCOUNT_AMOUNTS.get(2), "Tech", false, false)));
 
     // Every account needs to keep track of the number of transactions made to each commerciant
     // and the total amount of money spent on each commerciant
@@ -65,35 +71,47 @@ public class Account {
         TransactionInfo info = transactionMap.getOrDefault(commerciant, new TransactionInfo());
         info.addTransaction(amount);
         transactionMap.put(commerciant, info);
-
+        final int threshold1 = 2;
+        final int threshold2 = 5;
+        final int threshold3 = 10;
+        final double noDiscountReturn = -2;
         // Check if the new transaction qualifies for a new discount
         Commerciant comm = Maps.COMM_MAP.get(commerciant);
         if (comm.getCashbackStrategy().equals("nrOfTransactions")) {
             return switch (info.getCount()) {
-                case 2 -> {
+                case threshold1 -> {
                     discounts.get(0).setActive(true);
                     yield -1;
                 }
-                case 5 -> {
+                case threshold2 -> {
                     discounts.get(1).setActive(true);
                     yield -1;
                 }
-                case 10 -> {
+                case threshold3 -> {
                     discounts.get(2).setActive(true);
                     yield -1;
                 }
                 default -> 0;
             };
         } else if (comm.getCashbackStrategy().equals("spendingThreshold")) {
+            // Get total across all commerciants that are spendingThreshold
+            double total = transactionMap.entrySet().stream()
+                    .filter(entry -> {
+                        Commerciant comm1 = Maps.COMM_MAP.get(entry.getKey());
+                        return comm1 != null && "spendingThreshold"
+                                .equals(comm1.getCashbackStrategy());
+                    })
+                    .mapToDouble(entry -> entry.getValue().getTotal())
+                    .sum();
             for (Integer threshold: DiscountUtil.THRESHOLDS) {
-                if (info.getTotal() >= threshold) {
+                if (total >= threshold) {
                     return getThresholdDiscount(threshold);
                 }
             }
         } else {
-            // unknown strategy
+            System.out.println("Invalid cashback strategy");
         }
-        return -2;
+        return noDiscountReturn;
     }
 
     private double getThresholdDiscount(final int threshold) {

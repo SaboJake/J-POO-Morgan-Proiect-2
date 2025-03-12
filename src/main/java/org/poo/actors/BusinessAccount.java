@@ -25,17 +25,17 @@ public class BusinessAccount {
 
     private List<AddFundsTransaction> addFundsTransactions;
 
-    private class Assosciate {
+    private static class Associate {
         private String type;
         private Map<String, Card> cards;
 
-        Assosciate(final String type) {
+        Associate(final String type) {
             this.type = type;
             this.cards = new HashMap<>();
         }
     }
 
-    private Map<String, Assosciate> assosciateMap;
+    private Map<String, Associate> assosciateMap;
     private List<String> associates;
 
     public BusinessAccount(final String owner, final Account account) {
@@ -55,8 +55,8 @@ public class BusinessAccount {
      * @return - true if the email is a manager
      */
     public boolean isManager(final String email) {
-        Assosciate assosciate = assosciateMap.get(email);
-        return assosciate != null && assosciate.type.equals("manager");
+        Associate associate = assosciateMap.get(email);
+        return associate != null && associate.type.equals("manager");
     }
 
     /**
@@ -65,8 +65,8 @@ public class BusinessAccount {
      * @return - true if the email is an employee
      */
     public boolean isEmployee(final String email) {
-        Assosciate assosciate = assosciateMap.get(email);
-        return assosciate != null && assosciate.type.equals("employee");
+        Associate associate = assosciateMap.get(email);
+        return associate != null && associate.type.equals("employee");
     }
 
     /**
@@ -74,7 +74,7 @@ public class BusinessAccount {
      * @param email - the email of the employee
      */
     public void addAssociate(final String email, final String type) {
-        assosciateMap.put(email, new Assosciate(type));
+        assosciateMap.put(email, new Associate(type));
         associates.add(email);
     }
 
@@ -97,8 +97,8 @@ public class BusinessAccount {
         if (email.equals(owner)) {
             return true;
         }
-        Assosciate assosciate = assosciateMap.get(email);
-        return assosciate != null && (isManager(email) || spendLimit >= amount);
+        Associate associate = assosciateMap.get(email);
+        return associate != null && (isManager(email) || spendLimit >= amount);
     }
 
     /**
@@ -111,8 +111,8 @@ public class BusinessAccount {
         if (email.equals(owner)) {
             return true;
         }
-        Assosciate assosciate = assosciateMap.get(email);
-        return assosciate != null && (isManager(email) || depositLimit >= amount);
+        Associate associate = assosciateMap.get(email);
+        return associate != null && (isManager(email) || depositLimit >= amount);
     }
 
     /**
@@ -121,9 +121,9 @@ public class BusinessAccount {
      * @param card - the card to add
      */
     public void addCard(final String email, final Card card) {
-        Assosciate assosciate = assosciateMap.get(email);
-        if (assosciate != null) {
-            assosciate.cards.put(card.getCardNumber(), card);
+        Associate associate = assosciateMap.get(email);
+        if (associate != null) {
+            associate.cards.put(card.getCardNumber(), card);
         }
     }
 
@@ -134,8 +134,8 @@ public class BusinessAccount {
      * @return - true if the email has the card
      */
     public boolean hasCard(final String email, final Card card) {
-        Assosciate assosciate = assosciateMap.get(email);
-        return assosciate != null && assosciate.cards.containsKey(card.getCardNumber());
+        Associate associate = assosciateMap.get(email);
+        return associate != null && associate.cards.containsKey(card.getCardNumber());
     }
 
     /**
@@ -143,8 +143,8 @@ public class BusinessAccount {
      * @param card - the card to remove
      */
     public void removeCard(final Card card) {
-        for (Assosciate assosciate: assosciateMap.values()) {
-            assosciate.cards.remove(card.getCardNumber());
+        for (Associate associate : assosciateMap.values()) {
+            associate.cards.remove(card.getCardNumber());
         }
     }
 
